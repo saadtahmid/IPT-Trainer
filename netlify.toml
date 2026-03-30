@@ -1,9 +1,5 @@
 [build]
-command = "npm run build:apk"
 publish = "www/"
-
-[build.environment]
-NODE_VERSION = "22"
 
 [[redirects]]
 from = "/*"
