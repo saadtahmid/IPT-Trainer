@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Decision Trainer</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="smokeOverlay"></div>
+
+    <!-- Start Page -->
+    <div id="startPage">
+        <h1>Individual Proficiency Test</h1>
+        <p class="subtitle">Combat Awareness Simulator</p>
+
+        <input type="text" id="playerName" placeholder="নাম">
+        <input type="text" id="playerID" placeholder="আর্মি নাম্বার">
+
+        <select id="playerCategory">
+            <option value="">ক্যাটাগরি</option>
+            <option value="SNK">সৈনিক</option>
+            <option value="NCO">এনসিও</option>
+            <option value="JCO">জেসিও</option>
+             <option value="NCO_Course">এনসিও কোর্স</option>
+              <option value="JCO_Course">জেসিও কোর্স</option>
+        </select>
+
+        <button onclick="startQuiz()">Start Mission</button>
+    </div>
+
+    <!-- Quiz Page -->
+    <div id="quizPage" style="display:none;">
+        <div id="playerInfo"></div>
+        <div id="statusBar">
+            <div id="timer">Time: 10</div>
+            <div id="progress">Question: 1 / 20</div>
+        </div>
+        <h2 id="question"></h2>
+
+        <div id="options"></div>
+
+        <div id="result"></div>
+        <div id="score">Score: 0</div>
+
+        <button onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <!-- Leaderboard -->
+    <div id="leaderboardPage" style="display:none;">
+        <h1>Leaderboard</h1>
+        <div id="leaderboard"></div>
+        <button onclick="restartQuiz()">Restart</button>
+        <button onclick="clearLeaderboard()">Clear Leaderboard</button>
+    </div>
+
+    <audio id="correctSound" src="sounds/correct.ogg" preload="auto"></audio>
+    <audio id="wrongSound" src="sounds/wrong.ogg" preload="auto"></audio>
+
+    <footer id="appFooter">
+        <p>MADE BY 36 BIR</p>
+    </footer>
+
+    <!-- <script src="questions.js"></script> -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
