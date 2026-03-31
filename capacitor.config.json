@@ -1,11 +1,13 @@
 {
-  "appId": "com.air.ipt",
-  "appName": "IPT Trainer",
-  "webDir": "www",
-  "android": {
-    "allowMixedContent": true
-  },
-  "server": {
-    "cleartext": ["localhost"]
-  }
+    "appId": "com.air.ipt",
+    "appName": "IPT Trainer",
+    "webDir": "www",
+    "android": {
+        "allowMixedContent": true
+    },
+    "server": {
+        "cleartext": [
+            "localhost"
+        ]
+    }
 }

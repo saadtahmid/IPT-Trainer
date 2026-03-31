@@ -1589,6 +1589,7 @@ const JCOCourseQuestions
     ];
 // END QUIZ
 function endQuiz() {
+    clearInterval(timer);
     document.getElementById("quizPage").style.display = "none";
     updateLeaderboard();
     document.getElementById("leaderboardPage").style.display = "block";

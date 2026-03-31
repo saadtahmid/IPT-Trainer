@@ -157,6 +157,17 @@ select:focus {
     text-shadow: 0 0 7px rgba(255, 96, 96, 0.75);
 }
 
+.end-btn {
+    background: linear-gradient(135deg, #a02020 0%, #601010 100%);
+    border: 2px solid #ff4040;
+    margin-top: 15px;
+}
+
+.end-btn:hover {
+    background: linear-gradient(135deg, #c03030 0%, #801010 100%);
+    box-shadow: 0 5px 15px rgba(255, 64, 64, 0.45);
+}
+
 #leaderboard ol {
     text-align: left;
     margin: 0;
