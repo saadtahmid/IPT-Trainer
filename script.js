@@ -610,53 +610,66 @@ window.onload = async () => {
         const response = await fetch("/api/status");
         if (response.ok) {
             const data = await response.json();
-            if (data.isVisible) {
+            if (data.isVisible && data.categories.length > 0) {
                 document.getElementById("loadingOfflinePage").style.display = "none";
-                document.getElementById("passwordPage").style.display = "block";
+                const catDropdown = document.getElementById("playerCategory");
+                catDropdown.innerHTML = '<option value="">ক্যাটাগরি নির্ধারণ করুন</option>';
+                data.categories.forEach(cat => {
+                    catDropdown.innerHTML += `<option value="${cat.code}">${cat.name}</option>`;
+                });
+                document.getElementById("startPage").style.display = "block";
             } else {
-                document.getElementById("loadingOfflinePage").innerHTML = "<h1>Mission Offline</h1><p>Quiz is currently not visible.</p>";
+                document.getElementById("loadingOfflinePage").innerHTML = "<h1>Mission Offline</h1><p>Quiz is currently not available or no categories are active.</p>";
             }
         } else {
             throw new Error("Server error");
         }
     } catch (e) {
         document.getElementById("loadingOfflinePage").innerHTML = "<h1>Error</h1><p>Could not connect to server.</p>";
-        // Fallback for local testing without internet/server
-        console.warn("API error, falling back to local password prompt: ", e);
-        document.getElementById("loadingOfflinePage").style.display = "none";
-        document.getElementById("passwordPage").style.display = "block";
+        console.warn("API error: ", e);
     }
 };
 
-async function verifyPassword() {
-    const password = document.getElementById("quizPasswordInput").value;
+async function attemptStartMission() {
     const errorEl = document.getElementById("passwordError");
+    const categoryCode = document.getElementById("playerCategory").value;
+    const password = document.getElementById("quizPasswordInput").value;
+    const pName = document.getElementById("playerName").value.trim();
+    const pID = document.getElementById("playerID").value.trim();
 
-    errorEl.innerText = "Verifying...";
+    if (!pName || !pID || !categoryCode) {
+        errorEl.innerText = "দয়া করে নাম, আইডি এবং ক্যাটাগরি পূরণ করুন। (Fill Name, ID and Category)";
+        return;
+    }
+    if (!password) {
+        errorEl.innerText = "Please enter the access code for this category.";
+        return;
+    }
+
+    errorEl.innerText = "Verifying access code...";
+
     try {
         const response = await fetch("/api/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password })
+            body: JSON.stringify({ categoryCode, password })
         });
         
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
-                document.getElementById("passwordPage").style.display = "none";
-                document.getElementById("startPage").style.display = "block";
+                errorEl.innerText = "";
+                startQuiz(); // Correct access code, launch quiz!
                 return;
             }
         }
         
-        // Either not OK or not success
         const errData = await response.json().catch(()=>({}));
-        errorEl.innerText = errData.error || "Incorrect password";
+        errorEl.innerText = errData.error || "Incorrect password for this category.";
         
     } catch(e) {
-        // Fallback or handle offline
         console.warn(e);
-        errorEl.innerText = "API Error. Check network.";
+        errorEl.innerText = "API Error. Check network connection.";
     }
 }
 
@@ -665,11 +678,6 @@ function startQuiz() {
     player.name = document.getElementById("playerName").value;
     player.id = document.getElementById("playerID").value;
     player.category = document.getElementById("playerCategory").value || "N/A";
-
-    if (!player.name || !player.id) {
-        alert("Fill name and ID!");
-        return;
-    }
 
     document.getElementById("startPage").style.display = "none";
     document.getElementById("quizPage").style.display = "block";

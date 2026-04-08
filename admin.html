@@ -5,41 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <style>
+        .category-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .category-name { width: 150px; font-weight: bold; }
+        .category-controls { flex-grow: 1; display: flex; gap: 10px; align-items: center; }
+        input[type="text"].admin-input { width: auto; margin: 0; padding: 5px; font-size: 14px; }
+    </style>
 </head>
 <body>
     <div id="adminPage">
         <h1>Admin Dashboard</h1>
         
-        <input type="password" id="adminKey" placeholder="Admin Master Key">
-        
-        <div>
-            <label for="visibilityToggle">Quiz is Visible to Users:</label>
-            <input type="checkbox" id="visibilityToggle" checked>
-        </div>
+        <input type="password" id="adminKey" placeholder="Admin Master Key" onblur="fetchCategories()">
+        <button onclick="fetchCategories()" style="margin-bottom: 20px;">Load Settings</button>
 
-        <input type="text" id="newQuizPassword" placeholder="New Quiz Password">
+        <div id="categoriesContainer" style="display: none;">
+            <!-- Categories injected here -->
+        </div>
         
-        <button onclick="updateSettings()">Save Settings</button>
-        <div id="adminMessage"></div>
+        <button onclick="updateSettings()" id="saveBtn" style="display: none; margin-top:20px;">Save Settings</button>
+        <div id="adminMessage" style="margin-top: 10px;"></div>
     </div>
     
     <script>
-        async function updateSettings() {
+        let loadedCategories = [];
+
+        async function fetchCategories() {
             const adminKey = document.getElementById("adminKey").value;
-            const isVisible = document.getElementById("visibilityToggle").checked;
-            const quizPassword = document.getElementById("newQuizPassword").value;
             const messageEl = document.getElementById("adminMessage");
+            if(!adminKey) return;
 
             try {
                 const res = await fetch("/api/admin", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ adminKey, isVisible, quizPassword })
+                    body: JSON.stringify({ adminKey, action: "fetch" })
                 });
 
                 if (res.ok) {
-                    messageEl.innerText = "Settings saved successfully!";
+                    const data = await res.json();
+                    if(data.success) {
+                        loadedCategories = data.categories;
+                        renderCategories();
+                        document.getElementById("categoriesContainer").style.display = "block";
+                        document.getElementById("saveBtn").style.display = "block";
+                        messageEl.innerText = "";
+                    } else {
+                         messageEl.innerText = "Error: " + data.error;
+                         messageEl.style.color = "red";
+                    }
+                } else {
+                    const error = await res.json();
+                    messageEl.innerText = error.error || "Authentication failed.";
+                    messageEl.style.color = "red";
+                }
+            } catch(e) {
+                messageEl.innerText = "Network Error!";
+                messageEl.style.color = "red";
+            }
+        }
+
+        function renderCategories() {
+            const container = document.getElementById("categoriesContainer");
+            let html = "";
+            loadedCategories.forEach(cat => {
+                html += `
+                <div class="category-row">
+                    <div class="category-name">${cat.name} (${cat.code})</div>
+                    <div class="category-controls">
+                        <label><input type="checkbox" id="vis_${cat.code}" ${cat.is_visible ? "checked" : ""}> Visible</label>
+                        <input type="text" class="admin-input" id="pass_${cat.code}" value="${cat.quiz_password}" placeholder="Set Password">
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function updateSettings() {
+            const adminKey = document.getElementById("adminKey").value;
+            const messageEl = document.getElementById("adminMessage");
+
+            const updatedCategories = loadedCategories.map(cat => {
+                return {
+                    code: cat.code,
+                    is_visible: document.getElementById(`vis_${cat.code}`).checked,
+                    quiz_password: document.getElementById(`pass_${cat.code}`).value
+                };
+            });
+
+            try {
+                const res = await fetch("/api/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ adminKey, action: "update", categories: updatedCategories })
+                });
+
+                if (res.ok) {
+                    messageEl.innerText = "Settings saved successfully! Quiz passes updated.";
                     messageEl.style.color = "lightgreen";
                 } else {
                     const data = await res.json();
@@ -47,7 +117,7 @@
                     messageEl.style.color = "red";
                 }
             } catch (e) {
-                messageEl.innerText = "Network Error!";
+                messageEl.innerText = "Network Error during save!";
                 messageEl.style.color = "red";
             }
         }

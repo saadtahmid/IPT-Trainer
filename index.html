@@ -18,15 +18,6 @@
         <h1>Checking connection...</h1>
     </div>
 
-    <!-- Password Access Page -->
-    <div id="passwordPage" style="display:none; text-align:center; padding-top:20vh;">
-        <h1>Mission Locked</h1>
-        <p class="subtitle">Enter access code</p>
-        <input type="password" id="quizPasswordInput" placeholder="Password">
-        <button onclick="verifyPassword()">Access</button>
-        <div id="passwordError" style="color:red; margin-top:1rem;"></div>
-    </div>
-
     <!-- Start Page -->
     <div id="startPage" style="display:none;">
         <h1>Individual Proficiency Test</h1>
@@ -36,15 +27,14 @@
         <input type="text" id="playerID" placeholder="আর্মি নাম্বার">
 
         <select id="playerCategory">
-            <option value="">ক্যাটাগরি</option>
-            <option value="SNK">সৈনিক</option>
-            <option value="NCO">এনসিও</option>
-            <option value="JCO">জেসিও</option>
-            <option value="NCO_Course">এনসিও কোর্স</option>
-            <option value="JCO_Course">জেসিও কোর্স</option>
+            <option value="">ক্যাটাগরি নির্ধারণ করুন</option>
+            <!-- Categories will be injected here from db -->
         </select>
 
-        <button onclick="startQuiz()">Start Mission</button>
+        <input type="password" id="quizPasswordInput" placeholder="Category Access Code">
+        <div id="passwordError" style="color:red; font-size:14px; margin-bottom:1rem; min-height:20px;"></div>
+
+        <button onclick="attemptStartMission()">Start Mission</button>
     </div>
 
     <!-- Quiz Page -->
