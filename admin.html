@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="adminPage">
+        <h1>Admin Dashboard</h1>
+        
+        <input type="password" id="adminKey" placeholder="Admin Master Key">
+        
+        <div>
+            <label for="visibilityToggle">Quiz is Visible to Users:</label>
+            <input type="checkbox" id="visibilityToggle" checked>
+        </div>
+
+        <input type="text" id="newQuizPassword" placeholder="New Quiz Password">
+        
+        <button onclick="updateSettings()">Save Settings</button>
+        <div id="adminMessage"></div>
+    </div>
+    
+    <script>
+        async function updateSettings() {
+            const adminKey = document.getElementById("adminKey").value;
+            const isVisible = document.getElementById("visibilityToggle").checked;
+            const quizPassword = document.getElementById("newQuizPassword").value;
+            const messageEl = document.getElementById("adminMessage");
+
+            try {
+                const res = await fetch("/api/admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ adminKey, isVisible, quizPassword })
+                });
+
+                if (res.ok) {
+                    messageEl.innerText = "Settings saved successfully!";
+                    messageEl.style.color = "lightgreen";
+                } else {
+                    const data = await res.json();
+                    messageEl.innerText = "Error: " + data.error;
+                    messageEl.style.color = "red";
+                }
+            } catch (e) {
+                messageEl.innerText = "Network Error!";
+                messageEl.style.color = "red";
+            }
+        }
+    </script>
+</body>
+</html>

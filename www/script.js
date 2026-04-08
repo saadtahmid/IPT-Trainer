@@ -604,6 +604,62 @@ let wrongSound = document.getElementById("wrongSound");
 
 loadLeaderboard();
 
+// INITIALIZATION & CONNECTION CHECK
+window.onload = async () => {
+    try {
+        const response = await fetch("/api/status");
+        if (response.ok) {
+            const data = await response.json();
+            if (data.isVisible) {
+                document.getElementById("loadingOfflinePage").style.display = "none";
+                document.getElementById("passwordPage").style.display = "block";
+            } else {
+                document.getElementById("loadingOfflinePage").innerHTML = "<h1>Mission Offline</h1><p>Quiz is currently not visible.</p>";
+            }
+        } else {
+            throw new Error("Server error");
+        }
+    } catch (e) {
+        document.getElementById("loadingOfflinePage").innerHTML = "<h1>Error</h1><p>Could not connect to server.</p>";
+        // Fallback for local testing without internet/server
+        console.warn("API error, falling back to local password prompt: ", e);
+        document.getElementById("loadingOfflinePage").style.display = "none";
+        document.getElementById("passwordPage").style.display = "block";
+    }
+};
+
+async function verifyPassword() {
+    const password = document.getElementById("quizPasswordInput").value;
+    const errorEl = document.getElementById("passwordError");
+
+    errorEl.innerText = "Verifying...";
+    try {
+        const response = await fetch("/api/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById("passwordPage").style.display = "none";
+                document.getElementById("startPage").style.display = "block";
+                return;
+            }
+        }
+        
+        // Either not OK or not success
+        const errData = await response.json().catch(()=>({}));
+        errorEl.innerText = errData.error || "Incorrect password";
+        
+    } catch(e) {
+        // Fallback or handle offline
+        console.warn(e);
+        errorEl.innerText = "API Error. Check network.";
+    }
+}
+
 // START QUIZ
 function startQuiz() {
     player.name = document.getElementById("playerName").value;

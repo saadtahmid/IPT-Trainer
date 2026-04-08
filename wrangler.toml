@@ -1,0 +1,9 @@
+name = "shag"
+pages_build_output_dir = "www"
+compatibility_date = "2024-04-09"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shag_db"
+database_id = "df0943f4-f7c9-4d00-ba9f-fb39f5339c96" # You will replace this with your actual D1 ID later
+preview_database_id = "DB"

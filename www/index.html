@@ -13,8 +13,22 @@
 
     <div id="smokeOverlay"></div>
 
+    <!-- Initial Loading/Offline Page -->
+    <div id="loadingOfflinePage" style="text-align:center; padding-top:20vh;">
+        <h1>Checking connection...</h1>
+    </div>
+
+    <!-- Password Access Page -->
+    <div id="passwordPage" style="display:none; text-align:center; padding-top:20vh;">
+        <h1>Mission Locked</h1>
+        <p class="subtitle">Enter access code</p>
+        <input type="password" id="quizPasswordInput" placeholder="Password">
+        <button onclick="verifyPassword()">Access</button>
+        <div id="passwordError" style="color:red; margin-top:1rem;"></div>
+    </div>
+
     <!-- Start Page -->
-    <div id="startPage">
+    <div id="startPage" style="display:none;">
         <h1>Individual Proficiency Test</h1>
         <p class="subtitle">Combat Awareness Simulator</p>
 

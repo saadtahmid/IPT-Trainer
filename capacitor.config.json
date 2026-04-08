@@ -6,6 +6,7 @@
         "allowMixedContent": true
     },
     "server": {
+        "url": "https://shag-3jd.pages.dev",
         "cleartext": [
             "localhost"
         ]
