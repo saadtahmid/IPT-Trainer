@@ -8,13 +8,13 @@ export async function onRequestPost(context) {
         ).bind(categoryCode).all();
 
         if (results.length === 0) {
-             return Response.json({ success: false, error: "Category not found" }, { status: 404 });
+            return Response.json({ success: false, error: "Category not found" }, { status: 404 });
         }
 
         const category = results[0];
 
         if (!category.is_visible) {
-             return Response.json({ success: false, error: "Category is not currently active" }, { status: 403 });
+            return Response.json({ success: false, error: "Category is not currently active" }, { status: 403 });
         }
 
         if (password === category.quiz_password) {

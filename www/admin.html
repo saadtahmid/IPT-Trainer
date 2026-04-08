@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,33 +16,50 @@
             padding: 10px;
             border-radius: 5px;
         }
-        .category-name { width: 150px; font-weight: bold; }
-        .category-controls { flex-grow: 1; display: flex; gap: 10px; align-items: center; }
-        input[type="text"].admin-input { width: auto; margin: 0; padding: 5px; font-size: 14px; }
+
+        .category-name {
+            width: 150px;
+            font-weight: bold;
+        }
+
+        .category-controls {
+            flex-grow: 1;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"].admin-input {
+            width: auto;
+            margin: 0;
+            padding: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
+
 <body>
     <div id="adminPage">
         <h1>Admin Dashboard</h1>
-        
+
         <input type="password" id="adminKey" placeholder="Admin Master Key" onblur="fetchCategories()">
         <button onclick="fetchCategories()" style="margin-bottom: 20px;">Load Settings</button>
 
         <div id="categoriesContainer" style="display: none;">
             <!-- Categories injected here -->
         </div>
-        
+
         <button onclick="updateSettings()" id="saveBtn" style="display: none; margin-top:20px;">Save Settings</button>
         <div id="adminMessage" style="margin-top: 10px;"></div>
     </div>
-    
+
     <script>
         let loadedCategories = [];
 
         async function fetchCategories() {
             const adminKey = document.getElementById("adminKey").value;
             const messageEl = document.getElementById("adminMessage");
-            if(!adminKey) return;
+            if (!adminKey) return;
 
             try {
                 const res = await fetch("/api/admin", {
@@ -52,22 +70,22 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    if(data.success) {
+                    if (data.success) {
                         loadedCategories = data.categories;
                         renderCategories();
                         document.getElementById("categoriesContainer").style.display = "block";
                         document.getElementById("saveBtn").style.display = "block";
                         messageEl.innerText = "";
                     } else {
-                         messageEl.innerText = "Error: " + data.error;
-                         messageEl.style.color = "red";
+                        messageEl.innerText = "Error: " + data.error;
+                        messageEl.style.color = "red";
                     }
                 } else {
                     const error = await res.json();
                     messageEl.innerText = error.error || "Authentication failed.";
                     messageEl.style.color = "red";
                 }
-            } catch(e) {
+            } catch (e) {
                 messageEl.innerText = "Network Error!";
                 messageEl.style.color = "red";
             }
@@ -123,4 +141,5 @@
         }
     </script>
 </body>
+
 </html>

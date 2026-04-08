@@ -16,10 +16,10 @@ export async function onRequestPost(context) {
             ).all();
 
             return Response.json({ success: true, categories: results });
-            
+
         } else if (action === "update") {
             const { categories } = body; // Array of objects
-            
+
             // For simple bulk update
             for (let cat of categories) {
                 await context.env.DB.prepare(
@@ -29,7 +29,7 @@ export async function onRequestPost(context) {
 
             return Response.json({ success: true });
         } else {
-             return Response.json({ success: false, error: "Unknown action" }, { status: 400 });
+            return Response.json({ success: false, error: "Unknown action" }, { status: 400 });
         }
 
     } catch (e) {

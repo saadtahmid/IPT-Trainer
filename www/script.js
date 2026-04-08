@@ -654,7 +654,7 @@ async function attemptStartMission() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ categoryCode, password })
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
@@ -663,11 +663,11 @@ async function attemptStartMission() {
                 return;
             }
         }
-        
-        const errData = await response.json().catch(()=>({}));
+
+        const errData = await response.json().catch(() => ({}));
         errorEl.innerText = errData.error || "Incorrect password for this category.";
-        
-    } catch(e) {
+
+    } catch (e) {
         console.warn(e);
         errorEl.innerText = "API Error. Check network connection.";
     }
