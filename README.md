@@ -1,61 +1,83 @@
 # IPT Trainer - Military Decision Tactical Training
 
-A web-based application for military tactical decision training with category-specific question banks and audio feedback.
+A web-based application for military tactical decision training with category-specific question banks, admin controls, and audio feedback.
+
+## Architecture
+
+The project has recently been migrated to a modern serverless stack:
+- **Frontend & Backend Hosting**: [Cloudflare Pages](https://pages.cloudflare.com/)
+- **Database**: Cloudflare D1 (Serverless SQLite)
+- **Mobile App**: Cordova/Capacitor acting as a highly efficient live web wrapper.
 
 ## Features
 
-- 📱 Responsive design (desktop & mobile)
-- 🎯 Multiple question categories (SNK, NCO, JCO, NCO Course, JCO Course)
-- 🏆 Leaderboard with persistence
-- 🔊 Audio feedback (correct/wrong responses)
-- 📊 Progress tracking and timer
-- 🎖️ Military tactical theme
+- 📱 **Responsive Design** (Desktop & Mobile)
+- 🎯 **Multiple Question Categories** (SNK, NCO, JCO, NCO Course, JCO Course)
+- 🔒 **Dynamic Access Control** (Admin can toggle visibility and set unique passwords per category via `D1` database)
+- ⚙️ **Admin Dashboard** (Available at `/admin.html` secured with a master key)
+- 🏆 **Leaderboard** with persistence
+- 🔊 **Audio Feedback** (Correct/Wrong responses)
+- 📊 **Progress Tracking** and 10-second timer per question
+- 🎖️ **Military Tactical Theme**
 
 ## Prerequisites
 
 - Node.js 18+
-- Android SDK (for APK builds)
-- Gradle (included in Android SDK)
+- Cloudflare [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
+- Android Studio (Only needed once for the initial Capacitor build)
 
-## Installation
+## Local Development (Cloudflare Pages)
+
+To run the application locally with the D1 database binding:
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   npm install -D wrangler
+   ```
+
+2. **Initialize Local Database**:
+   ```bash
+   npx wrangler d1 execute shag_db --local --file=./schema.sql
+   ```
+
+3. **Start Local Development Server**:
+   ```bash
+   npx wrangler pages dev www
+   ```
+
+## Admin Dashboard
+
+To access the admin dashboard, navigate to `/admin.html` in your browser.
+Enter the master admin key to view and modify:
+- Which categories are visible to users.
+- The unique access password for each specific category.
+
+## Deployment to Cloudflare
+
+Deploying updates to the live site is simple. Because the Android APK is a live wrapper pointing to the Cloudflare URL, **you do not need to rebuild the APK when you change HTML or JS**.
 
 ```bash
-npm install
+# Optional: Update production database schema if needed
+npx wrangler d1 execute shag_db --remote --file=./schema.sql
+
+# Deploy code to Cloudflare Pages
+npx wrangler pages deploy www
 ```
 
-## Development
+## Android APK
+
+The `capacitor.config.json` is configured to load the live Cloudflare Pages URL directly (`https://shag-3jd.pages.dev`). You only need to build the APK once.
 
 ```bash
-npm run dev
-```
+# Sync web directory changes to Android
+npx cap sync android
 
-## Build APK
-
-### Local Build
-```bash
-npx cap sync
+# Build from Android Studio or via Gradle
 cd android
 ./gradlew assembleRelease
 ```
-
 The APK will be located at: `android/app/build/outputs/apk/release/app-release.apk`
-
-### Cloud Build with Netlify
-Push to GitHub and Netlify will automatically build the APK using the provided workflow.
-
-## Project Structure
-
-```
-├── index.html           # Main UI
-├── style.css            # Military tactical theme
-├── script.js            # Quiz logic & routing
-├── sounds/              # Audio effects
-├── www/                 # Capacitor web assets
-├── android/             # Android platform
-├── capacitor.config.json
-├── netlify.toml         # Netlify config
-└── package.json
-```
 
 ## Author
 
