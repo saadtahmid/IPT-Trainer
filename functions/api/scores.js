@@ -6,7 +6,7 @@ export async function onRequestPost(context) {
         // Action 1: Public POST (Submit Score)
         if (action === "submit") {
             const { name, id, category, score } = body;
-            
+
             if (!name || !id || !category || score === undefined) {
                 return Response.json({ success: false, error: "Missing fields" }, { status: 400 });
             }
@@ -23,7 +23,7 @@ export async function onRequestPost(context) {
 
             return Response.json({ success: true, topScores: results });
         }
-        
+
         // Admin Actions...
         const { adminKey } = body;
         if (!adminKey) return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -41,16 +41,16 @@ export async function onRequestPost(context) {
         if (action === "fetch_scores") {
             const { category } = body;
             if (!category) return Response.json({ success: false, error: "Category missing" }, { status: 400 });
-            
+
             const { results } = await context.env.DB.prepare(
                 "SELECT * FROM scores WHERE category = ? ORDER BY score DESC, timestamp ASC"
             ).bind(category).all();
             return Response.json({ success: true, scores: results });
-            
+
         } else if (action === "delete_scores") {
             const { category } = body;
             if (!category) return Response.json({ success: false, error: "Category missing" }, { status: 400 });
-            
+
             // Delete scores
             await context.env.DB.prepare(
                 "DELETE FROM scores WHERE category = ?"
