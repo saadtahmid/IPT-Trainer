@@ -595,14 +595,10 @@ let current = 0;
 let score = 0;
 let timer;
 let Time = 15;
-let leaderboard = [];
-const LEADERBOARD_STORAGE_KEY = "ipt_leaderboard";
 let hasAnswered = false;
 
 let correctSound = document.getElementById("correctSound");
 let wrongSound = document.getElementById("wrongSound");
-
-loadLeaderboard();
 
 // INITIALIZATION & CONNECTION CHECK
 window.onload = async () => {
@@ -1652,62 +1648,56 @@ const JCOCourseQuestions
         }
     ];
 // END QUIZ
-function endQuiz() {
+async function endQuiz() {
     clearInterval(timer);
     document.getElementById("quizPage").style.display = "none";
-    updateLeaderboard();
     document.getElementById("leaderboardPage").style.display = "block";
+    document.getElementById("leaderboard").innerHTML = "<p>Submitting score...</p>";
+    await updateLeaderboard();
 }
 
-function renderLeaderboard() {
-    let html = "<ol>";
-    leaderboard.forEach(p => {
-        html += `<li>${p.name} (${p.category}) - ${p.score}</li>`;
-    });
+function renderLeaderboard(scoresData) {
+    let html = "<h3>Top 5 Scores</h3><ol>";
+    if (scoresData && scoresData.length > 0) {
+        scoresData.forEach(p => {
+            html += `<li>${p.name} (${p.category}) - ${p.score}</li>`;
+        });
+    } else {
+        html += "<li>No scores yet</li>";
+    }
     html += "</ol>";
 
     document.getElementById("leaderboard").innerHTML = html;
 }
 
 // LEADERBOARD
-function updateLeaderboard() {
-    leaderboard.push({
-        name: player.name,
-        score: score,
-        category: player.category
-    });
-
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 5);
-    saveLeaderboard();
-    renderLeaderboard();
+async function updateLeaderboard() {
+    try {
+        const res = await fetch("/api/scores", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action: "submit",
+                name: player.name,
+                id: player.id,
+                category: player.category,
+                score: score
+            })
+        });
+        const data = await res.json();
+        if (data.success && data.topScores) {
+            renderLeaderboard(data.topScores);
+        } else {
+            document.getElementById("leaderboard").innerHTML = "<p>Error loading leaderboard</p>";
+        }
+    } catch (e) {
+        document.getElementById("leaderboard").innerHTML = "<p>Network error while saving score</p>";
+    }
 }
 
 // RESTART
 function restartQuiz() {
     location.reload();
-}
-
-function clearLeaderboard() {
-    leaderboard = [];
-    saveLeaderboard();
-    renderLeaderboard();
-}
-
-function loadLeaderboard() {
-    try {
-        const stored = localStorage.getItem(LEADERBOARD_STORAGE_KEY);
-        leaderboard = stored ? JSON.parse(stored) : [];
-        if (!Array.isArray(leaderboard)) {
-            leaderboard = [];
-        }
-    } catch {
-        leaderboard = [];
-    }
-}
-
-function saveLeaderboard() {
-    localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(leaderboard));
 }
 
 // SHUFFLE

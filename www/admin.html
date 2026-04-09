@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,26 +16,46 @@
             padding: 10px;
             border-radius: 5px;
         }
-        .category-name { width: 150px; font-weight: bold; }
-        .category-controls { flex-grow: 1; display: flex; gap: 10px; align-items: center; }
-        input[type="text"].admin-input, input[type="password"].admin-input { width: auto; margin: 0; padding: 5px; font-size: 14px; }
+
+        .category-name {
+            width: 150px;
+            font-weight: bold;
+        }
+
+        .category-controls {
+            flex-grow: 1;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"].admin-input,
+        input[type="password"].admin-input {
+            width: auto;
+            margin: 0;
+            padding: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
+
 <body>
     <div id="adminPage">
         <h1>Admin Dashboard</h1>
-        
+
         <input type="password" id="adminKey" placeholder="Current Master Key" onblur="fetchCategories()">
         <button onclick="fetchCategories()" style="margin-bottom: 20px;">Load Settings</button>
 
         <div id="categoriesContainer" style="display: none;">
             <!-- Categories injected here -->
         </div>
-        
-        <button onclick="updateSettings()" id="saveBtn" style="display: none; margin-top:20px; width:100%;">Save Category Settings</button>
+
+        <button onclick="updateSettings()" id="saveBtn" style="display: none; margin-top:20px; width:100%;">Save
+            Category Settings</button>
         <div id="adminMessage" style="margin-top: 10px; font-weight:bold;"></div>
 
-        <div id="changeKeyContainer" style="display: none; margin-top: 40px; padding-top: 20px; border-top: 1px solid #555;">
+        <div id="changeKeyContainer"
+            style="display: none; margin-top: 40px; padding-top: 20px; border-top: 1px solid #555;">
             <h2>Change Master Key</h2>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <input type="password" id="newAdminKey" class="admin-input" placeholder="New Master Key (min 4 chars)">
@@ -44,14 +65,25 @@
         </div>
 
     </div>
-    
+
+    <!-- Scores Modal -->
+    <div id="scoresModal"
+        style="display: none; position: fixed; top: 5%; left: 5%; width: 90%; height: 90%; background: #222; border: 2px solid #555; border-radius: 10px; padding: 20px; flex-direction: column; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="scoresTitle">Scores for Category</h2>
+            <button onclick="closeScoresModal()" style="width: auto; background: gray;">Close</button>
+        </div>
+        <button id="clearScoresBtn" style="margin-top: 10px; background: darkred;">Clear Session Data</button>
+        <div id="scoresTableContainer" style="margin-top: 20px;"></div>
+    </div>
+
     <script>
         let loadedCategories = [];
 
         async function fetchCategories() {
             const adminKey = document.getElementById("adminKey").value;
             const messageEl = document.getElementById("adminMessage");
-            if(!adminKey) return;
+            if (!adminKey) return;
 
             try {
                 const res = await fetch("/api/admin", {
@@ -62,7 +94,7 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    if(data.success) {
+                    if (data.success) {
                         loadedCategories = data.categories;
                         renderCategories();
                         document.getElementById("categoriesContainer").style.display = "block";
@@ -71,8 +103,8 @@
                         messageEl.innerText = "Connected Securely!";
                         messageEl.style.color = "lightgreen";
                     } else {
-                         messageEl.innerText = "Error: " + data.error;
-                         messageEl.style.color = "red";
+                        messageEl.innerText = "Error: " + data.error;
+                        messageEl.style.color = "red";
                     }
                 } else {
                     const error = await res.json();
@@ -82,7 +114,7 @@
                     document.getElementById("saveBtn").style.display = "none";
                     document.getElementById("changeKeyContainer").style.display = "none";
                 }
-            } catch(e) {
+            } catch (e) {
                 messageEl.innerText = "Network Error!";
                 messageEl.style.color = "red";
             }
@@ -98,10 +130,98 @@
                     <div class="category-controls">
                         <label><input type="checkbox" id="vis_${cat.code}" ${cat.is_visible ? "checked" : ""}> Visible</label>
                         <input type="text" class="admin-input" id="pass_${cat.code}" value="${cat.quiz_password}" placeholder="Set Password">
+                        <button style="padding: 5px; font-size: 12px; margin-left: 10px;" onclick="viewScores('${cat.code}', '${cat.name}')">View Scores</button>
                     </div>
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        let currentScoresCategory = null;
+
+        async function viewScores(code, name) {
+            const adminKey = document.getElementById("adminKey").value;
+            currentScoresCategory = code;
+
+            document.getElementById("scoresModal").style.display = "flex";
+            document.getElementById("scoresTitle").innerText = `Scores for ${name} (${code})`;
+            document.getElementById("scoresTableContainer").innerHTML = "<p>Loading scores...</p>";
+
+            document.getElementById("clearScoresBtn").onclick = () => clearSessionData(code);
+
+            try {
+                const res = await fetch("/api/scores", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ adminKey, action: "fetch_scores", category: code })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    renderScoresTable(data.scores);
+                } else {
+                    document.getElementById("scoresTableContainer").innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                }
+            } catch (e) {
+                document.getElementById("scoresTableContainer").innerHTML = "<p style='color:red;'>Network Error</p>";
+            }
+        }
+
+        function renderScoresTable(scores) {
+            if (scores.length === 0) {
+                document.getElementById("scoresTableContainer").innerHTML = "<p>No scores recorded for this category yet.</p>";
+                return;
+            }
+
+            let html = `<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <th style="border: 1px solid #555; padding: 5px;">Time</th>
+                    <th style="border: 1px solid #555; padding: 5px;">Army No</th>
+                    <th style="border: 1px solid #555; padding: 5px;">Name</th>
+                    <th style="border: 1px solid #555; padding: 5px;">Score</th>
+                </tr>`;
+
+            scores.forEach(s => {
+                html += `<tr>
+                    <td style="border: 1px solid #555; padding: 5px;">${new Date(s.timestamp + 'Z').toLocaleString()}</td>
+                    <td style="border: 1px solid #555; padding: 5px;">${s.player_id}</td>
+                    <td style="border: 1px solid #555; padding: 5px;">${s.player_name}</td>
+                    <td style="border: 1px solid #555; padding: 5px; font-weight: bold;">${s.score}</td>
+                </tr>`;
+            });
+            html += "</table>";
+            document.getElementById("scoresTableContainer").innerHTML = html;
+        }
+
+        async function clearSessionData(code) {
+            if (!confirm(`Are you sure you want to delete ALL scores for '${code}'? This will also clear its quiz password.`)) {
+                return;
+            }
+
+            const adminKey = document.getElementById("adminKey").value;
+            try {
+                const res = await fetch("/api/scores", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ adminKey, action: "delete_scores", category: code })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    alert("Successfully cleared scores and reset password. Reloading dashboard...");
+                    closeScoresModal();
+                    fetchCategories(); // Refresh passwords and list
+                } else {
+                    alert("Failed to clear scores: " + data.error);
+                }
+            } catch (e) {
+                alert("Network error while trying to clear scores.");
+            }
+        }
+
+        function closeScoresModal() {
+            document.getElementById("scoresModal").style.display = "none";
+            currentScoresCategory = null;
         }
 
         async function updateSettings() {
@@ -161,7 +281,7 @@
                     document.getElementById("adminKey").value = newKey;
                     document.getElementById("newAdminKey").value = "";
                 } else {
-                    const data = await res.json().catch(()=>({}));
+                    const data = await res.json().catch(() => ({}));
                     messageEl.innerText = "Error: " + (data.error || "Could not change key");
                     messageEl.style.color = "red";
                 }
@@ -172,4 +292,5 @@
         }
     </script>
 </body>
+
 </html>
