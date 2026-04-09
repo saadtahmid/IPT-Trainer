@@ -594,7 +594,7 @@ let selectedQuestions = [];
 let current = 0;
 let score = 0;
 let timer;
-let time = 15;
+let Time = 15;
 let leaderboard = [];
 const LEADERBOARD_STORAGE_KEY = "ipt_leaderboard";
 let hasAnswered = false;
@@ -772,7 +772,7 @@ function nextQuestion() {
 
 // TIMER
 function startTimer() {
-    time = 10;
+    time = Time;
     const timerEl = document.getElementById("timer");
     timerEl.classList.remove("low-time");
     timerEl.innerText = "Time: " + time;
