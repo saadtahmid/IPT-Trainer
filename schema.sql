@@ -11,4 +11,9 @@ INSERT INTO categories (code, name, is_visible, quiz_password) VALUES
 ('NCO', 'এনসিও', 1, '1234'),
 ('JCO', 'জেসিও', 1, '1234'),
 ('NCO_Course', 'এনসিও কোর্স', 1, '1234'),
-('JCO_Course', 'জেসিও কোর্স', 1, '1234');
+CREATE TABLE IF NOT EXISTS admin_settings (
+    id INTEGER PRIMARY KEY,
+    master_key TEXT NOT NULL
+);
+
+INSERT INTO admin_settings (id, master_key) VALUES (1, 'super_secret_admin_key_123');

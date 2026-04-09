@@ -3,8 +3,12 @@ export async function onRequestPost(context) {
         const body = await context.request.json();
         const { adminKey, action } = body;
 
-        // Hardcoded admin key for simplicity
-        const MASTER_ADMIN_KEY = "super_secret_admin_key_123";
+        // Fetch admin key from DB
+        const { results: adminSettings } = await context.env.DB.prepare(
+            "SELECT master_key FROM admin_settings WHERE id = 1"
+        ).all();
+
+        const MASTER_ADMIN_KEY = adminSettings.length > 0 ? adminSettings[0].master_key : "super_secret_admin_key_123";
 
         if (adminKey !== MASTER_ADMIN_KEY) {
             return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -28,6 +32,20 @@ export async function onRequestPost(context) {
             }
 
             return Response.json({ success: true });
+            
+        } else if (action === "update_key") {
+            const { newKey } = body;
+
+            if (!newKey || newKey.length < 4) {
+               return Response.json({ success: false, error: "New key must be at least 4 characters long" }, { status: 400 }); 
+            }
+
+            await context.env.DB.prepare(
+                "UPDATE admin_settings SET master_key = ? WHERE id = 1"
+            ).bind(newKey).run();
+
+            return Response.json({ success: true });
+            
         } else {
             return Response.json({ success: false, error: "Unknown action" }, { status: 400 });
         }
