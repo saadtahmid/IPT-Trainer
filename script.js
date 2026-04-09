@@ -594,7 +594,7 @@ let selectedQuestions = [];
 let current = 0;
 let score = 0;
 let timer;
-let time = 10;
+let time = 15;
 let leaderboard = [];
 const LEADERBOARD_STORAGE_KEY = "ipt_leaderboard";
 let hasAnswered = false;
