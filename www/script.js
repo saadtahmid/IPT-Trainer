@@ -2448,9 +2448,9 @@ function startQuiz() {
 
     // Select questions based on category
     let questionsToUse;
-    if (player.category === "NCO_Course") {
+    if (player.category === "NCO_Course" || player.category === "NCO") {
         questionsToUse = NCOCourseQuestions;
-    } else if (player.category === "JCO_Course") {
+    } else if (player.category === "JCO_Course" || player.category === "JCO") {
         questionsToUse = JCOCourseQuestions;
     } else if (player.category === "SNK") {
         questionsToUse = SNKCourseQuestions;
@@ -2535,6 +2535,7 @@ function nextQuestion() {
 
 // TIMER
 function startTimer() {
+    clearInterval(timer);
     time = Time;
     const timerEl = document.getElementById("timer");
     timerEl.classList.remove("low-time");
